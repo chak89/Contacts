@@ -1,17 +1,32 @@
 package contacts;
 
+import java.time.LocalDateTime;
+import java.time.temporal.ChronoUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public class Contacts {
-    private String name;
-    private String surName;
-    private String number;
+public abstract class Contacts {
+    public enum Type {
+        PERSON,
+        ORGANIZATION
+    }
 
-    public Contacts(String name, String surName, String number) {
-        this.name = name;
-        this.surName = surName;
-        setNumber(number);
+    private Type type;
+    private String number;
+    private LocalDateTime created;
+    private LocalDateTime lastEdit;
+
+    public Contacts() {
+        this.created = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+        this.lastEdit = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
+    }
+
+    public Type getType() {
+        return type;
+    }
+
+    public void setType(Type type) {
+        this.type = type;
     }
 
     public String getNumber() {
@@ -28,22 +43,6 @@ public class Contacts {
         }
     }
 
-    public String getName() {
-        return name;
-    }
-
-    public void setName(String name) {
-        this.name = name;
-    }
-
-    public String getSurName() {
-        return surName;
-    }
-
-    public void setSurName(String surName) {
-        this.surName = surName;
-    }
-
     public boolean hasNumber() {
         return !number.isEmpty();
     }
@@ -57,16 +56,21 @@ public class Contacts {
         return matcher.matches();
     }
 
-
-    @Override
-    public String toString() {
-
-        if (this.hasNumber()) {
-            return this.name + " " + this.surName
-                    +", " + this.number;
-        } else {
-            return this.name + " " + this.surName
-                    +", " + "[no number]";
-        }
+    public LocalDateTime getCreated() {
+        return created;
     }
+
+    public void setCreated(LocalDateTime created) {
+        this.created = created;
+    }
+
+    public LocalDateTime getLastEdit() {
+        return lastEdit;
+    }
+
+    public void setLastEdit(LocalDateTime lastEdit) {
+        this.lastEdit = lastEdit;
+    }
+
+    public abstract String getNameInfo();
 }

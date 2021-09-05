@@ -13,7 +13,7 @@ public class UserInterface {
 
     public void userInput() {
         while (true) {
-            System.out.print("Enter action (add, remove, edit, count, list, exit): ");
+            System.out.print("Enter action (add, remove, edit, count, info, exit): ");
             String command = sc.nextLine();
 
             switch (command) {
@@ -29,8 +29,8 @@ public class UserInterface {
                 case "count":
                     count();
                     break;
-                case "list":
-                    list();
+                case "info":
+                    info();
                     break;
                 case "exit":
                     return;
@@ -39,17 +39,7 @@ public class UserInterface {
     }
 
     public void add() {
-        System.out.print("Enter the name of the person: ");
-        String name = sc.nextLine();
-
-
-        System.out.print("Enter the surname of the person: ");
-        String surname = sc.nextLine();
-
-        System.out.print("Enter the number: ");
-        String number = sc.nextLine();
-
-        phoneBook.add(name,surname,number);
+        phoneBook.add();
     }
 
     public void remove() {
@@ -64,7 +54,7 @@ public class UserInterface {
         phoneBook.count();
     }
 
-    public void list() {
-        phoneBook.list();
+    public void info() {
+        phoneBook.info();
     }
 }
