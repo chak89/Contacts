@@ -1,17 +1,16 @@
 package contacts;
 
+import java.io.Serializable;
+import java.lang.reflect.Field;
+import java.lang.reflect.Method;
 import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
+import java.util.List;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-public abstract class Contacts {
-    public enum Type {
-        PERSON,
-        ORGANIZATION
-    }
+public abstract class Contacts implements Serializable {
 
-    private Type type;
     private String number;
     private LocalDateTime created;
     private LocalDateTime lastEdit;
@@ -21,13 +20,6 @@ public abstract class Contacts {
         this.lastEdit = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
     }
 
-    public Type getType() {
-        return type;
-    }
-
-    public void setType(Type type) {
-        this.type = type;
-    }
 
     public String getNumber() {
         return number;
@@ -60,17 +52,21 @@ public abstract class Contacts {
         return created;
     }
 
-    public void setCreated(LocalDateTime created) {
-        this.created = created;
-    }
-
     public LocalDateTime getLastEdit() {
         return lastEdit;
     }
 
-    public void setLastEdit(LocalDateTime lastEdit) {
-        this.lastEdit = lastEdit;
+    public void setLastEdit() {
+        this.lastEdit = LocalDateTime.now().truncatedTo(ChronoUnit.MINUTES);
     }
 
     public abstract String getNameInfo();
+
+    public abstract List<Field> getInstanceDeclaredFields();
+
+    public abstract List<Method> getAllSetters();
+
+    public abstract void getSetter(String methodeName, String value);
+
+    public abstract String toString();
 }

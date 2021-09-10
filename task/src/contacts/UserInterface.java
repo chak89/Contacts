@@ -1,36 +1,38 @@
 package contacts;
 
+import java.io.IOException;
 import java.util.Scanner;
 
 public class UserInterface {
     private final Scanner sc;
     private final PhoneBook phoneBook;
+    private final boolean saveToDisk;
+    private final String fileName;
 
-    public UserInterface(PhoneBook phoneBook) {
+    public UserInterface(PhoneBook phoneBook, boolean saveToDisk, String fileName) {
         this.sc = new Scanner(System.in);
         this.phoneBook = phoneBook;
+        this.saveToDisk = saveToDisk;
+        this.fileName = fileName;
     }
 
     public void userInput() {
         while (true) {
-            System.out.print("Enter action (add, remove, edit, count, info, exit): ");
+            System.out.print("[menu] Enter action (add, list, search, count, exit): ");
             String command = sc.nextLine();
 
             switch (command) {
                 case "add":
                     add();
                     break;
-                case "remove":
-                    remove();
+                case "list":
+                    list();
                     break;
-                case "edit":
-                    edit();
+                case "search":
+                    search();
                     break;
                 case "count":
                     count();
-                    break;
-                case "info":
-                    info();
                     break;
                 case "exit":
                     return;
@@ -40,21 +42,34 @@ public class UserInterface {
 
     public void add() {
         phoneBook.add();
+        if (saveToDisk) {
+            SaveToDisk();
+        }
     }
 
-    public void remove() {
-        phoneBook.remove();
+    public void list() {
+        phoneBook.list();
+        if (saveToDisk) {
+            SaveToDisk();
+        }
     }
 
-    public void edit() {
-        phoneBook.edit();
+    public void search() {
+        phoneBook.search();
+        if (saveToDisk) {
+            SaveToDisk();
+        }
     }
 
     public void count() {
-        phoneBook.count();
+       phoneBook.count();
     }
 
-    public void info() {
-        phoneBook.info();
+    public void SaveToDisk() {
+        try {
+            ReadWriteFile.serialize(phoneBook,fileName);
+        } catch (IOException e) {
+            e.printStackTrace();
+        }
     }
 }

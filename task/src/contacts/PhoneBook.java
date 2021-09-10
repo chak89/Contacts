@@ -1,27 +1,31 @@
 package contacts;
 
+import java.io.Serializable;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Scanner;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
-public class PhoneBook {
+public class PhoneBook implements Serializable {
+    private static final long serialVersionUID = 1L;
+
     List<Contacts> phoneBook;
-    Scanner sc;
 
     public PhoneBook() {
         this.phoneBook = new ArrayList<>();
-        sc = new Scanner(System.in);
     }
 
-    public void add( ) {
+    public void add() {
+        Scanner sc = new Scanner(System.in);
         Contacts contact;
-
         System.out.print("Enter the type (person, organization): ");
         String type = sc.nextLine();
 
-        if(type.equals("person")) {
+        if (type.equals("person")) {
 
-            Person person = new Person(Contacts.Type.PERSON);
+            Person person = new Person();
 
             System.out.print("Enter the name: ");
             String name = sc.nextLine();
@@ -33,7 +37,7 @@ public class PhoneBook {
 
             System.out.print("Enter the birth date: ");
             String birthDate = sc.nextLine();
-            person.setBirthDate(birthDate);
+            person.setBirth(birthDate);
 
             System.out.print("Enter the gender (M, F): ");
             String gender = sc.nextLine();
@@ -45,17 +49,16 @@ public class PhoneBook {
 
             contact = person;
 
-        }
-        else if(type.equals("organization")) {
-            Organization organization = new Organization(Contacts.Type.ORGANIZATION);
+        } else if (type.equals("organization")) {
+            Organization organization = new Organization();
 
             System.out.print("Enter the organization name: ");
             String orgName = sc.nextLine();
-            organization.setOrgName(orgName);
+            organization.setName(orgName);
 
             System.out.print("Enter the address: ");
             String orgAddress = sc.nextLine();
-            organization.setOrgAddress(orgAddress);
+            organization.setAddress(orgAddress);
 
             System.out.print("Enter the number: ");
             String number = sc.nextLine();
@@ -70,103 +73,138 @@ public class PhoneBook {
         System.out.println("The record added.\n");
     }
 
-    public void remove() {
+    public void remove(Contacts result) {
         if (phoneBook.size() == 0) {
             System.out.println("No records to remove!");
         } else {
-            list();
-            System.out.print("Select a record: ");
-            int record = sc.nextInt();
-            phoneBook.remove(record-1);
-            System.out.print("The record removed!");
+            phoneBook.remove(result);
+            System.out.print("The record removed!\n\n");
         }
     }
 
-    public void edit() {
+
+    public void search() {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("Enter search query: ");
+        String query = sc.nextLine();
+
+        List<Contacts> matchedQueries = new ArrayList<>();
+
+        for (Contacts contact : phoneBook) {
+            Pattern pattern = Pattern.compile(".*" + query + ".*", Pattern.CASE_INSENSITIVE);
+            Matcher matcher = pattern.matcher(contact.toString());
+
+            if (matcher.find()) {
+                matchedQueries.add(contact);
+            }
+        }
+
+        System.out.println("Found " + matchedQueries.size() + " results:");
+        for (int i = 0; i < matchedQueries.size(); i++) {
+            System.out.println((i + 1) + ". " + matchedQueries.get(i).getNameInfo());
+        }
+        System.out.println();
+
+        //Enter search menu
+        searchMenu(matchedQueries);
+    }
+
+    //Search menu
+    public void searchMenu(List<Contacts> matchedQueries) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("[search] Enter action ([number], back, again): ");
+        String input = sc.nextLine();
+
+        //[number]
+        if (input.matches("\\d+")) {
+            Contacts result = matchedQueries.get(Integer.parseInt(input) - 1);
+            System.out.println(result);
+
+            //Enter record menu
+            recordMenu(result);
+
+
+        } else if (input.equals("back")) {
+        } else if (input.equals("again")) {
+            search();
+        }
+    }
+
+    //Record menu
+    public void recordMenu(Contacts result) {
+        Scanner sc = new Scanner(System.in);
+        System.out.print("[record] Enter action (edit, delete, menu): ");
+        String input = sc.nextLine();
+
+        switch (input) {
+            case "edit":
+                edit(result);
+                break;
+            case "delete":
+                remove(result);
+                break;
+            case "menu":
+                break;
+        }
+    }
+
+    public void edit(Contacts result) {
+        Scanner sc = new Scanner(System.in);
         if (phoneBook.size() == 0) {
             System.out.println("No records to edit!");
         } else {
-            list();
-            System.out.print("Select a record: ");
-            int record = Integer.parseInt(sc.nextLine());
-            Contacts contact = phoneBook.get(record - 1);
 
-            if (contact.getType().name().equals("PERSON")) {
-                editPerson((Person) contact);
+            List<Field> nameFields = result.getInstanceDeclaredFields();
+            StringBuilder str = new StringBuilder();
+            str.append("Select a field (");
+            for (Field field : nameFields) {
+                str.append(field.getName()).append(", ");
             }
-            else if(contact.getType().name().equals("ORGANIZATION")) {
-                editOrganization((Organization) contact);
-            }
+            str.delete(str.length() - 2, str.length());
+            str.append("): ");
+
+            System.out.print(str);
+            String methodToCall = sc.nextLine();
+
+            System.out.print("Enter " + methodToCall + ": ");
+            String stringValue = sc.nextLine();
+
+            result.getSetter(methodToCall, stringValue);
+            System.out.println("Saved");
+            System.out.println(result);
 
             System.out.println("The record updated!\n");
         }
     }
 
-    public void editPerson(Person contact) {
-        System.out.print("Select a field (name, surname, birth, gender, number): ");
-        String field = sc.nextLine();
-
-        switch (field) {
-            case "name":
-                System.out.print("Enter name: ");
-                contact.setName(sc.nextLine());
-                break;
-            case "surname":
-                System.out.print("Enter surname: ");
-                contact.setSurname(sc.nextLine());
-                break;
-            case "birthDate":
-                System.out.print("Enter birth date: ");
-                contact.setBirthDate(sc.nextLine());
-                break;
-            case "gender":
-                System.out.print("Enter gender: ");
-                contact.setGender(sc.nextLine());
-                break;
-            case "number":
-                System.out.print("Enter number: ");
-                contact.setNumber(sc.nextLine());
-                break;
-        }
-    }
-
-    public void editOrganization(Organization contact) {
-        System.out.print("Select a field (name, address, number): ");
-        String field = sc.nextLine();
-
-        switch (field) {
-            case "name":
-                System.out.print("Enter name: ");
-                contact.setOrgName(sc.nextLine());
-                break;
-            case "address":
-                System.out.print("Enter address: ");
-                contact.setOrgAddress(sc.nextLine());
-                break;
-            case "number":
-                System.out.println("Enter number: ");
-                contact.setNumber(sc.nextLine());
-                break;
-        }
-    }
-
-
 
     public void count() {
         System.out.println("The Phone Book has " + phoneBook.size() + " records.");
-    }
-
-    public void info() {
-        list();
-        System.out.print("Enter index to show info: ");
-        int index = Integer.parseInt(sc.nextLine());
-        System.out.println(phoneBook.get(index-1));
+        System.out.println();
     }
 
     public void list() {
-        for (int i = 0; i < phoneBook.size(); i++) {
-            System.out.println((i+1) + ". " + phoneBook.get(i).getNameInfo());
+        Scanner sc = new Scanner(System.in);
+        if (phoneBook.size() > 0) {
+            for (int i = 0; i < phoneBook.size(); i++) {
+                System.out.println((i + 1) + ". " + phoneBook.get(i).getNameInfo());
+            }
+
+            System.out.println();
+            System.out.print("[list] Enter action ([number], back): ");
+            String input = sc.nextLine();
+
+            //[number]
+            if (input.matches("\\d+")) {
+                Contacts result = phoneBook.get(Integer.parseInt(input) - 1);
+                System.out.println(result);
+
+                //Enter record menu
+                recordMenu(result);
+            } else if (input.equals("back")) {
+            }
         }
+
     }
 
 }
